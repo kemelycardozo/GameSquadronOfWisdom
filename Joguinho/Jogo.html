@@ -1,0 +1,530 @@
+<DOCTYPE !HTML>
+    <html>
+        <head>
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+            
+            <title>Squadron Of Wisdom</title>
+            <style>
+                html,body {
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden; 
+                    display: block;
+                }
+                #canvas {
+                    background-image: url("img/fase1.png");
+                    background-size: 100% 100%;
+                    background-repeat: no-repeat;
+                }
+                #meteor, #meteorQuestion, #ship{
+                    display: none;
+                } 
+                
+                #canvas.menu {
+                    background-image: url("img/bg.png");
+                }
+                #canvas.running {
+                    background-image: url("img/fase1.png");
+                } 
+                .modal-fade .modal-dialog { width: 60%; } 
+
+            </style>
+        </head>
+        <body onload="drawMenu()" id="myBackground">
+            <canvas id="canvas" style='position:absolute; left:0px; top:0px;'>Navegador não suporta HTML5</canvas>
+            <img src='img/meteor.png' id="meteor"/>
+            <img src='img/nave.png' id="ship"/>
+            <img src='img/meteorQuestion.png' id="meteorQuestion"/>
+            <img src 'img/bg.png' id="bg"/>
+
+            <div id="questionModal" class="modal fade" role="dialog" data-backdrop="static" >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Questão</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>
+                                <label id="question"></label>
+                                <br />
+                                <input type="radio" name="alternative" id="A1" value=""><label for="A" id="A"></label><br /><br />
+                                <input type="radio" name="alternative" id="B1" value=""><label for="A" id="B"></label><br /><br />
+                                <input type="radio" name="alternative" id="C1" value=""><label for="A" id="C"></label><br /><br />
+                                <input type="radio" name="alternative" id="D1" value=""><label for="A" id="D"></label><br /><br /> 
+                            </p>
+                            <button type="button" id="sendResponse" class="btn btn-success">Responder</button>
+                        </div>
+                    </div>                 
+                </div>
+            </div>
+
+            <script type="text/javascript">
+
+                var diameter = [40,45,50,55,60,65,70];
+
+                var questions = new Array(
+
+                    { 'number':0,'question':'Podemos citar como um fator crítico de sucesso na implantação de um Sistema ERP em uma empresa:','A':'A modelagem adequada dos processos de negócio da organização.','B':'A imposição de uma nova cultura organizacional.','C':' A complexidade na customização e a diminuição nos custos de implementação.','D':' A resistência a mudanças pelos funcionários.','response':'A','iscorrect': 0},
+                    { 'number': 1, 'question': 'Sabendo que (p)=V, (q)=F e (r)=V, qual o valor da sentença ~(p^q)->r v q:', 'A': 'Verdadeiro.', 'B': ' Falso.', 'C': 'Indeterminado.', 'D': 'Nenhuma das anteriores.', 'response': 'A', 'iscorrect': 0},
+                    { 'number': 2, 'question': 'Os computadores utilizam o sistema binário (base 2) que é um sistema de numeração com base em dois números (0 e 1).  Em um computador o número 240, em base decimal, será representado, em base binária, por:', 'A': '1111 0000', 'B': '0111 0000', 'C': '1001 0000', 'D': '1110 1000', 'response': 'A', 'iscorrect': 0},
+                    { 'number': 3, 'question': 'As habilidades necessárias ao desempenho das atividades do administrador e que são mais importantes quando se ascende ao nível institucional e que estão relacionadas à compreensão da complexidade organizacional e ao ajustamento do comportamento das pessoas aos objetivos das organizações são as denominadas habilidades:', 'A': ' Técnicas.', 'B': 'Humanas.', 'C': 'Conceituais.', 'D': 'Comerciais.', 'response': 'C', 'iscorrect': 0},
+                    { 'number': 4, 'question': 'O que faz um pós-incremento/decremento:', 'A': 'Vai incrementar o valor do índice, apenas', 'B': ' A variável é atribuída, e só depois (des)incrementada.', 'C': ' A variável é (des)incrementada, e só depois atribuída.', 'D': 'Não influencia diretamente na sintaxe do código.', 'response': 'B', 'iscorrect': 0},
+                    { 'number': 5, 'question': 'Qual possesivo completa corretamente a lacuna abaixo  We’re in class 2. _____ teacher is Richard.', 'A': 'My', 'B': 'Your', 'C': 'Our', 'D': 'Hi', 'response': 'C', 'iscorrect': 0},                
+                    { 'number': 6, 'question': 'Analise o código a seguir:  ...  1- Dim x As Integer  2- Dim y As Integer  3- x = 5  4- y = 3  5- If x > y Then  6- MsgBox “x é maior que y.”  7- Else  8- MsgBox “x é menor que y.”  9- End Else  10- End If  ...  Podemos observar que haverá um erro de compilação na linha: ', 'A': 'Linha 5', 'B': 'Linha 7 ', 'C': 'Linha 9', 'D': 'Linha 10', 'response': 'C', 'iscorrect': 0},                   
+                    { 'number': 7, 'question': 'Identifique a figura de linguagem empregada nos versos destacados:  “No tempo de meu Pai, sob estes galhos,  Como uma vela fúnebre de cera,  Chorei bilhões de vezes com a canseira  De inexorabilíssimos trabalhos!”', 'A': ' Metonímia', 'B': 'Exagero', 'C': 'Hipérbole', 'D': 'Catacrese ', 'response': 'C', 'iscorrect': 0},  
+                );
+
+                var playerPositionX,
+                    velocityPlayer,
+                    playerEnd, 
+                    playerPause, 
+                    shipPlayer, 
+                    lives,
+                    collision,      
+                    meteorHeigth,
+                    meteorWidth,
+                    shipHeight,
+                    shipWidth,
+                    shotHeight,
+                    shotWidth,
+                    shotPositionX,
+                    shotPositionY,
+                    shotGun,
+                    shotCollision,
+                    timeQuestion,
+                    missiles,
+                    shot,
+                    zIsDown,
+                    numberDrawn,
+                    selected;
+
+                var height,
+                    width,
+                    widthMenu = 400,
+                    heightMenu = 300;
+
+                var canvas = document.getElementById("canvas");
+                var context = canvas.getContext("2d");
+
+                function updateBackground() {
+                
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.classList.add("menu");
+                canvas.setAttribute("width", width);
+                canvas.setAttribute("height", height);
+            }
+
+            function drawBaseMenu() {
+
+                context.fillStyle = "rgba(255,255,255,0)";
+                drawItemsMenu();
+                var x = parseInt((width / 2) - (widthMenu / 2));
+                var y = parseInt((height / 2) - (heightMenu / 2));
+                context.fillRect(x, y, widthMenu, widthMenu);
+            }
+
+            function drawItemsMenu() {
+
+                var x = parseInt((width / 2) - (widthMenu / 2));
+                var y = parseInt((height / 2) - (heightMenu / 2));
+                
+                var img = new Image();
+
+                    img.onload = function () {
+                        context.drawImage(img, x, y);
+                    }
+                    img.src = "img/start.png";
+                
+            }
+                            
+            function selectItem(index) {
+                
+                var x = parseInt((width / 2) - (widthMenu / 2));
+                var y = parseInt((height / 2) - (heightMenu / 2));
+                var img;
+
+                img = new Image();
+                    switch (index) {
+                        case 0:
+                            startGame();                      
+                        break;
+                    }
+            
+            }
+
+            function drawMenu() {
+                updateBackground();
+                drawBaseMenu();
+                drawItemsMenu();  
+            }  
+
+            window.onmousedown = function () {
+
+                var posX = event.clientX;
+                var posY = event.clientY;
+                var x = parseInt((width / 2) - (widthMenu / 2));
+                var y = parseInt((height / 2) - (heightMenu / 2));
+                var indexFunction = -1;
+
+                if (posX > x && posX < x + widthMenu) {
+                    if (posY > y && posY < y + heightMenu) {
+                        indexFunction  = parseInt((posY - y) / 100);                        
+                    }
+                }
+
+                selectItem(indexFunction );
+            } 
+
+                function startGame(){
+                
+                    canvas.classList.add("running");
+                    canvas.classList.remove("menu");
+
+                    shot = false;
+                    zIsDown = false;
+                    playerPause = false;
+                    playerEnd = false;
+                    shipHeight = 150;
+                    shipWidth = 170;
+                    lives = 4;
+                    velocityPlayer = 20;
+                    shotHeight = 30;
+                    shotWidth = 10;
+                    shotGun = false;
+                    zIsDown = false;
+                    shotCollision = false;
+
+                    var meteorImage = document.createElement('img'); 
+                    var meteorQuestionImg = document.createElement('img');   
+
+                    firstMeteorQuestion = new meteorQuestion();
+                    firstMeteor = new meteor();
+
+                    meteors = new Array(firstMeteor);
+                    meteorsQuestion = new Array(firstMeteorQuestion);             
+
+                    document.addEventListener('keydown', keyDown);
+                    window.addEventListener('resize', resizeCanvas, false);
+                    resizeCanvas();
+
+                    playerPositionX = (canvas.width - shipWidth) / 2;
+
+                    shotPositionX = (playerPositionX + (shipWidth/2) - 6.5);
+                    shotPositionY = (canvas.height - shipHeight - shotHeight);
+
+                    interval = setInterval(gameLoop, 30);
+                    document.body.style.cursor = 'none';
+                }
+
+                function resizeCanvas() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    gameLoop();
+                }
+
+                function keyDown(e) 
+                {
+                    if(e.keyCode == 37)  
+                    {
+                        if(playerPositionX > 0)
+                        {
+                            playerPositionX  -= velocityPlayer;
+                            if (!zIsDown) {
+                                shotPositionX = playerPositionX + 78;
+                            }
+                        }
+                    }
+                    
+                    if(e.keyCode == 39)  
+                    {
+                        if(playerPositionX  < (canvas.width - shipWidth))
+                        {
+                            playerPositionX += velocityPlayer;
+                            if (!zIsDown) {
+                                shotPositionX = playerPositionX + 78;
+                            }
+                        }
+                    }
+
+                    if(e.keyCode == 32)  
+                    {
+                        pauseGame();
+                    }
+
+                    if(e.keyCode == 90){
+                        if(!zIsDown){
+                            shot = true;
+                            zIsDown = true;
+                        }              
+                    }
+                }
+
+                
+                function pauseGame(){
+
+                    if(playerPause) 
+                        {
+                            playerPause=false;
+                            interval = setInterval(gameLoop, 30);
+                    }else
+                    {
+                        playerPause=true;
+                        gameLoop();
+                        clearInterval(interval);
+                    }
+                }
+
+                function createQuestion(numberDrawn){
+
+                    if (questions[numberDrawn]['iscorrect'] != 1) {
+
+                        document.getElementById('question').innerHTML = questions[numberDrawn]['question'];
+                        document.getElementById('A').innerHTML = questions[numberDrawn]['A'];
+                        document.getElementById('B').innerHTML = questions[numberDrawn]['B'];
+                        document.getElementById('C').innerHTML = questions[numberDrawn]['C'];
+                        document.getElementById('D').innerHTML = questions[numberDrawn]['D'];
+
+                        var response = questions[numberDrawn]['response'];
+                    }else{
+
+                    }
+                }
+
+                $("#sendResponse").click(function () {
+
+                    if ($("#A1").prop("checked")) 
+                        selected = 'A';
+
+                    if ($("#B2").prop("checked")) 
+                        selected = 'B';
+
+                    if ($("#C3").prop("checked")) 
+                        selected = 'C';
+                    
+                    if ($("#D4").prop("checked")) 
+                        selected = 'D';
+
+                    if (questions[numberDrawn]['response'] == selected) {
+
+                        questions[numberDrawn]['iscorrect'] = 1;
+                        //context.fillText("Resposta Certa!", (canvas.width - 235) / 2, (canvas.height - 32) / 2);
+                        alert("Resposta Certa!");
+                    }
+                    else {
+                        alert("Resposta Errada!");
+                        //context.fillText("Resposta Errada!", (canvas.width - 235) / 2, (canvas.height - 32) / 2);
+                        lives--;                                
+                    }
+
+                    $('#questionModal').modal('hide');
+                    
+                    document.body.style.cursor = 'none';
+                    //playerPause = false;
+                    pauseGame();
+                });
+                
+                function meteor(){
+
+                    var index = Math.round(Math.random() * (6 - 1) + 1) - 1;
+                    this.meteorDiameter = diameter[index];
+                    this.meteorPositionX = Math.random() * canvas.width; 
+                    this.meteorPositionY = -10;
+                    this.meteorHeigth = diameter[index]; 
+                    this.meteorWidth = diameter[index];
+                    this.meteorImage = document.getElementById("meteor");
+                    this.velocityMeteor = Math.round(Math.random() * (10 - 6)) + 6;
+                    this.collision = false;
+                    this.shotCollision = false;
+                }
+
+                function meteorQuestion(){
+
+                    var index = Math.round(Math.random() * (6 - 1) + 1) - 1;
+                    this.meteorDiameter = diameter[index];
+                    this.meteorPositionX = Math.random() * canvas.width; 
+                    this.meteorPositionY = -10;
+                    this.meteorHeigth = diameter[index]; 
+                    this.meteorWidth = diameter[index];
+                    this.meteorQuestionImg = document.getElementById("meteorQuestion");
+                    this.velocityMeteor = Math.round(Math.random() * (10 - 6)) + 6;
+                    this.collision = false;
+                    this.shotCollision = false;
+                }
+
+                function gameLoop(){
+                                        
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.beginPath();
+
+                    if(meteors.length <= 0 || meteorsQuestion.length <=0)
+                    {   
+                        meteors.push(new meteor());
+                        meteorsQuestion.push(new meteorQuestion());
+                    }
+
+                    meteorsQuestion.forEach(function(b,index){
+                        
+                        context.drawImage(b.meteorQuestionImg,b.meteorPositionX,b.meteorPositionY,b.meteorWidth,b.meteorHeigth);        
+                        context.fill(); 
+
+                            if(b.meteorPositionY >= 50 && meteorsQuestion.length <= 1)
+                            {
+                                meteorsQuestion.push(new meteorQuestion());
+                            }
+                            
+                            if(b.meteorPositionY  <= canvas.height)
+                            {
+                                b.meteorPositionY  += b.velocityMeteor;
+                            }
+                            else
+                            {
+                                meteorsQuestion.splice(index, 1);
+                            }
+
+                            if((b.meteorPositionX > playerPositionX && b.meteorPositionX < playerPositionX + shipWidth) && b.meteorPositionY >= canvas.height - shipHeight && b.collision == false)
+                            {
+                                b.collision = true;
+
+                                $(document).ready(function(){
+
+                                    document.body.style.cursor = 'default';
+
+                                    numberDrawn = Math.round(Math.random() * (5 - 1) + 1) - 1;
+                                    createQuestion(numberDrawn);
+
+                                    $('#questionModal').modal('show');
+                                    
+                                        pauseGame();
+                                        
+                                        // $("#sendResponse").click(function(){
+                                        //     $('#questionModal').modal('hide');
+                                        //         document.body.style.cursor = 'none';
+                                        //         playerPause = false;
+                                        // });
+                                });
+
+                               
+                            }
+                    });
+
+                    meteors.forEach(function(b, index)
+                    {
+                        context.beginPath();  
+                        context.drawImage(b.meteorImage,b.meteorPositionX,b.meteorPositionY,b.meteorWidth,b.meteorHeigth);   
+                        context.fill(); 
+
+                            if(b.meteorPositionY >= 50 && meteors.length <= 1)
+                            {
+                                meteors.push(new meteor());
+                            }
+                            
+                            if(b.meteorPositionY  <= canvas.height)
+                            {
+                                b.meteorPositionY  += b.velocityMeteor;
+                            }
+                            else
+                            {
+                                meteors.splice(index, 1);
+                            }
+
+                            if((b.meteorPositionX > playerPositionX && b.meteorPositionX < playerPositionX + shipWidth) && b.meteorPositionY >= canvas.height - shipHeight && b.collision == false)
+                            {
+                                lives--;
+                                b.collision = true;
+                            }
+
+                            if(lives < 1){
+                                gameOver();
+                            }
+
+                            if (shot) { 
+
+                                context.beginPath();
+                                context.fillStyle = "red";
+                                context.fillRect(shotPositionX, shotPositionY, shotWidth, shotHeight);
+                                shotPositionY = shotPositionY - 10;
+                                shotCollision = false;
+                                
+                                if (shotPositionY < 0) {
+                                    shot = false;
+                                    zIsDown = false;
+                                    shotPositionY = (canvas.height - shipHeight - shotHeight);
+                                    shotPositionX = playerPositionX + 78;
+                                }
+
+                                if ((b.meteorPositionX <= shotPositionX || b.meteorPositionX <= shotPositionX + shotWidth || b.meteorPositionX >= shotPositionX || b.meteorPositionX >= shotPositionX) 
+                                    && b.meteorPositionY >= shotPositionY + shotHeight && b.shotCollision == false) {
+
+                                    b.shotCollision = true;
+                                    meteors.splice(index,1);
+                                    
+                                }
+                            }
+                    });
+ 
+
+                    if(playerPause)
+                    {
+                        context.font = "50pt Tahoma";
+                        context.fillStyle= 'rgb(255,255,255)';
+                        context.fillText('PAUSE', (canvas.width-235)/2, (canvas.height-32)/2);
+                    }
+                
+                    context.fillStyle= 'rgba(0,0,125,0.5)';
+                    context.fillRect(0,0,canvas.width,70);
+
+                    context.font= "40pt Tahoma";
+                    context.fillStyle= "white";
+                    context.fillText('Squadron Of Wisdom',(canvas.width - 160) / 3,50);
+
+                    context.font = "32pt Tahoma";
+				    context.fillStyle = 'rgb(255,255,255)';
+				    context.fillText('Vidas:'+lives, canvas.width - 180, 50);
+
+                    shipPlayer = document.getElementById("ship");
+                    context.drawImage(shipPlayer,playerPositionX,canvas.height-shipHeight,shipWidth,shipHeight);
+                                
+                }
+
+                function gameOver(){          
+                        
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+    
+                    context.fillStyle= 'rgba(0,0,125,0.5)';
+                    context.fillRect((canvas.width-90)/2-198,(canvas.height/2)-211,518,298);
+                    rectangleBorderRound(context,(canvas.width-90)/2-200,(canvas.height/2)-212,520,300,8);       
+                    
+                    context.drawImage(shipPlayer,(canvas.width - 90) / 2,(canvas.height/2)-180,125,110);
+    
+                    context.font = "32pt Tahoma";
+                    context.fillStyle= 'rgb(255,255,255)';
+                    context.fillText("FIM DE JOGO", (canvas.width-235)/2, (canvas.height-32)/2);
+
+                    document.body.style.cursor = 'default';
+                    clearInterval(interval);
+                }
+
+                function rectangleBorderRound(ctx,x,y,width,height,radius){
+
+                    ctx.beginPath();
+                    ctx.moveTo(x,y+radius);
+                    ctx.lineTo(x,y+height-radius);
+                    ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+                    ctx.lineTo(x+width-radius,y+height);
+                    ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+                    ctx.lineTo(x+width,y+radius);
+                    ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+                    ctx.lineTo(x+radius,y);
+                    ctx.quadraticCurveTo(x,y,x,y+radius);
+                    ctx.stroke();
+                }
+
+            
+            </script>
+
+        </body>
+    </html>
